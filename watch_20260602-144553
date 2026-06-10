@@ -1,0 +1,28 @@
+CONTAINER ID   IMAGE                                     COMMAND                  CREATED         STATUS                
+     PORTS                                         NAMES                                                                
+714cef05bf1d   mcr.microsoft.com/azure-sql-edge:latest   "/opt/mssql/bin/perm…"   5 minutes ago   Up 5 minutes (unhealth
+y)   0.0.0.0:1433->1433/tcp, [::]:1433->1433/tcp   equipmenttrackerthesis-db-1                                          
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        

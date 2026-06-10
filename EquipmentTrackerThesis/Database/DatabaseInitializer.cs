@@ -70,24 +70,33 @@ namespace EquipmentTrackerThesis.Database
         /// <param name="scriptFileName"></param>
         private static void ExecuteSqlScript(SqlConnection connection, string scriptFileName)
         {
-            string currentDirectory = Directory.GetCurrentDirectory();
-            string scriptFilePath = Path.Combine(currentDirectory, scriptFileName);
+        string currentDirectory = Directory.GetCurrentDirectory();
+        string scriptFilePath = Path.Combine(currentDirectory, scriptFileName);
 
-            if (!File.Exists(scriptFilePath))
-            {
-                
-                Console.WriteLine($"Error: Script file not found at {scriptFilePath}");
-                return;
-            }
+        if (!File.Exists(scriptFilePath))
+        {
+        Console.WriteLine($"Error: Script file not found at {scriptFilePath}");
+        return;
+        }
 
-            string script;
-            using (StreamReader reader = new(scriptFilePath, Encoding.GetEncoding(1250)))
-            {
-                script = reader.ReadToEnd();
-            }
-    
-            SqlCommand cmd = new(script, connection);
-            cmd.ExecuteNonQuery();
+        string script;
+        using (StreamReader reader = new(scriptFilePath, Encoding.GetEncoding(1250)))
+        {
+        script = reader.ReadToEnd();
+        }
+
+        // GO mentén feldaraboljuk és külön futtatjuk
+        var batches = System.Text.RegularExpressions.Regex
+        .Split(script, @"^\s*GO\s*$", System.Text.RegularExpressions.RegexOptions.Multiline | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        foreach (var batch in batches)
+        {
+        string trimmed = batch.Trim();
+        if (string.IsNullOrWhiteSpace(trimmed)) continue;
+
+        using SqlCommand cmd = new(trimmed, connection);
+        cmd.ExecuteNonQuery();
+        }
         }
     }
 }

@@ -7,9 +7,15 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using EquipmentTrackerThesis.Database.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-var masterConnectionString = "Server=localhost; Trusted_connection=True;";
-var appConnectionString = "Server=localhost; DataBase=ManagementSystemDB; Trusted_connection=True;";
+//original connection strings for windows
+//var masterConnectionString = "Server=localhost; Trusted_connection=True;";
+//var appConnectionString = "Server=localhost; DataBase=ManagementSystemDB; Trusted_connection=True;";
 
+//connection strings for MacOS
+var masterConnectionString = builder.Configuration["ConnectionStrings:Master"] 
+    ?? "Server=localhost; Trusted_connection=True;";
+var appConnectionString = builder.Configuration["ConnectionStrings:App"] 
+    ?? "Server=localhost; DataBase=ManagementSystemDB; Trusted_connection=True;";
 
 //Login page
 builder.Services.AddSingleton<EquipmentTrackerThesis.ILocalStorage, EquipmentTrackerThesis.LocalStorage>();
