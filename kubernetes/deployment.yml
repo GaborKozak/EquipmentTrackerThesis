@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: equipment-tracker
+  labels:
+    app: equipment-tracker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: equipment-tracker
+  template:
+    metadata:
+      labels:
+        app: equipment-tracker
+    spec:
+      containers:
+        - name: equipment-tracker
+          image: gaborkozak/equipment-tracker:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_URLS
+              value: "http://+:8080"
+            - name: ConnectionStrings__App
+              value: "Server=mssql;Database=ManagementSystemDB;User Id=sa;Password=DevOps_Pass123;TrustServerCertificate=True;"
+            - name: ConnectionStrings__Master
+              value: "Server=mssql;User Id=sa;Password=DevOps_Pass123;TrustServerCertificate=True;"
