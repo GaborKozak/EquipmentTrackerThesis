@@ -1,0 +1,10 @@
+app:
+  name: equipment-tracker
+  image: gaborkozak/equipment-tracker:latest
+  replicas: 2
+  port: 8080
+
+mssql:
+  image: mcr.microsoft.com/azure-sql-edge:latest
+  password: "DevOps_Pass123"
+  port: 1433

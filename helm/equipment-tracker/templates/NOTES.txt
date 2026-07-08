@@ -1,0 +1,4 @@
+Equipment Tracker alkalmazás sikeresen telepítve!
+
+Az alkalmazás eléréséhez futtasd:
+  minikube service {{ .Values.app.name }}-service
