@@ -2,87 +2,77 @@
 @using EquipmentTrackerThesis.Database;
 @using EquipmentTrackerThesis.Database.Models;
 @using EquipmentTrackerThesis.Pages.Components;
+@using MudBlazor
 @inject DatabaseHandler _databaseHandler;
-
-<div class="modal @(ModalClass)" tabindex="-1" role="dialog" style="display:@ModalDisplay">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content" style="background-color: #7398ff;">
-            <div class="d-flex justify-content-center align-items-center @(ModalTypeToClass())">
-                <span class="oi oi-@(IconFromModalType())" style="margin-right:10px" aria-hidden="true"> Eszköz módosítása/archiválása</span>
-                <h6 class="modal-title">@Title</h6>
-            </div>
-            <div class="modal-body">
-                <div class="d-flex flex-column">
-                    <div class="form-group">
-                        <label for="name">Név:</label>
-                        <input type="text" class="form-control" id="name" name="name" @bind="@Name">
-                    </div>
-                    <div class="form-group">
-                        <label for="snumber">Gyártási szám:</label>
-                        <input type="text" class="form-control" id="snumber" name="snumber" @bind="@SerialNumber">
-                    </div>
-                    <div class="form-group">
-                        <label for="type">Típus:</label>
-                        <select class="form-control" id="type" name="type" @bind="@Type_">
-                            @foreach (var type in types)
-                            {
-                                <option value="@type">@type</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="pdate">Vásárlás dátuma:</label>
-                        <DatePicker Name="@("Dátum választása")" @bind-Value="@PurchaseDate"></DatePicker>
-                    </div>
-                    <div class="form-group">
-                        <label for="owner">Tulajdonos:</label>
-                        <select class="form-control" id="owner" name="owner" @bind="@Owner">
-                            @foreach (var emp in employees)
-                            {
-                                if (emp.IsActive)
-                                {
-                                    <option value="@emp.Id">@emp.SurName @emp.FirstName</option>
-                                }
-                                else
-                                {
-                                    continue;
-                                }
-                            }
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="recdate">Átvétel dátuma:</label>
-                        <DatePicker Name="@("Dátum választása")" @bind-Value="@ReceptionDate"></DatePicker>
-                    </div>
-                    <div class="form-group">
-                        <label for="recdate">Leadás dátuma:</label>
-                        <DatePicker Name="@("Dátum választása")" @bind-Value="@ReturnDate"></DatePicker>
-                    </div>
-                    <br />
-                    <div class="form-group">
-                        <label for="recdate">Archiválás:</label>
-                        <input type="checkbox" class="" id="archive" name="archive" @bind="@Archived">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer d-inline-block">
-                <button type="button" class="btn spa-btn-secondary" data-dismiss="modal" @onclick="() => TryUpdate()">Módosítás</button>
-                <button type="button" class="btn spa-btn-secondary" data-dismiss="modal" @onclick="() => Close()">Mégse</button>
-            </div>
-            @if (message == "Hiba: Az eszköz adataiban nem történt változás!")
-            {
-                <span class="alert alert-danger" role="alert">@message</span>
-            }
-        </div>
-    </div>
-</div>
-
-<ModalConfirmWindow @ref="modalConfirmWindow" OnAccepted="@(async () => Update())"></ModalConfirmWindow>
 
 @if (ShowBackdrop)
 {
-    <div class="modal-backdrop fade show"></div>
+    <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1200;" @onclick="Close"></div>
 }
+
+@if (ModalDisplay == "block;")
+{
+    <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1300;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;">
+        <MudPaper Elevation="8" Style="background-color: #1e2535; border: 1px solid #2d3748; border-radius: 12px; padding: 0;">
+            <div style="background-color: #2a3550; padding: 16px 24px; border-radius: 12px 12px 0 0; display:flex; align-items:center; justify-content:space-between;">
+                <MudText Typo="Typo.h6" Style="color: #e2e8f0;">
+                    <MudIcon Icon="@Icons.Material.Filled.Edit" Style="margin-right:8px; vertical-align:middle;" />
+                    Eszköz módosítása/archiválása
+                </MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="Close" Style="color: #a0aec0;" Size="Size.Small" />
+            </div>
+            <div style="padding: 24px;">
+                <MudTextField Label="Név" @bind-Value="Name"
+                             Variant="Variant.Outlined" Style="margin-bottom:16px;" />
+                <MudTextField Label="Gyártási szám" @bind-Value="SerialNumber"
+                             Variant="Variant.Outlined" Style="margin-bottom:16px;" />
+                <MudSelect T="string" Label="Típus" @bind-Value="Type_"
+                          Variant="Variant.Outlined" Style="margin-bottom:16px;">
+                    @foreach (var type in types)
+                    {
+                        <MudSelectItem Value="@type">@type</MudSelectItem>
+                    }
+                </MudSelect>
+                <div style="margin-bottom:16px;">
+                    <MudText Style="color: #a0aec0; font-size:12px; margin-bottom:4px;">Vásárlás dátuma:</MudText>
+                    <DatePicker Name="@("Dátum választása")" @bind-Value="@PurchaseDate"></DatePicker>
+                </div>
+                <MudSelect T="int" Label="Tulajdonos" @bind-Value="Owner"
+                          Variant="Variant.Outlined" Style="margin-bottom:16px;">
+                    @foreach (var emp in employees)
+                    {
+                        if (emp.IsActive == true)
+                        {
+                            <MudSelectItem Value="@emp.Id">@emp.SurName @emp.FirstName</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+                <div style="margin-bottom:16px;">
+                    <MudText Style="color: #a0aec0; font-size:12px; margin-bottom:4px;">Átvétel dátuma:</MudText>
+                    <DatePicker Name="@("Dátum választása")" @bind-Value="@ReceptionDate"></DatePicker>
+                </div>
+                <div style="margin-bottom:16px;">
+                    <MudText Style="color: #a0aec0; font-size:12px; margin-bottom:4px;">Leadás dátuma:</MudText>
+                    <DatePicker Name="@("Dátum választása")" @bind-Value="@ReturnDate"></DatePicker>
+                </div>
+                <MudCheckBox @bind-Checked="Archived" Label="Archiválás"
+                            Color="Color.Primary" Style="color: #e2e8f0;" />
+                @if (!string.IsNullOrEmpty(message))
+                {
+                    <MudAlert Severity="Severity.Error" Style="margin-top:16px;">@message</MudAlert>
+                }
+            </div>
+            <div style="padding: 16px 24px; border-top: 1px solid #2d3748; display:flex; justify-content:flex-end; gap:8px;">
+                <MudButton Variant="Variant.Text" OnClick="Close" Style="color: #a0aec0;">Mégse</MudButton>
+                <MudButton Variant="Variant.Filled" OnClick="TryUpdate"
+                          Style="background-color: #4a6fa5; color: white;">Módosítás</MudButton>
+            </div>
+        </MudPaper>
+    </div>
+}
+
+<ModalConfirmWindow @ref="modalConfirmWindow" OnAccepted="@(async () => Update())"></ModalConfirmWindow>
+
 
 @code {
     [Parameter]

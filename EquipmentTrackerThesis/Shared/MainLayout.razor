@@ -1,5 +1,6 @@
 ﻿@using EquipmentTrackerThesis.Data;
 @using EquipmentTrackerThesis.Database;
+@using MudBlazor
 @inherits LayoutComponentBase
 
 @inject EquipmentTrackerThesis.ILocalStorage LocalStorage
@@ -9,72 +10,101 @@
 @inject NavigationManager navigationmanager
 
 <CascadingValue Value="this">
+    <MudThemeProvider Theme="_theme" IsDarkMode="true" />
+    <MudDialogProvider />
+    <MudSnackbarProvider />
 
-    <PageTitle>EquipmentTrackerThesis</PageTitle>
+    <PageTitle>Equipment Tracker</PageTitle>
 
-    <div class="page">
-        <div class="sidebar">
-            <NavMenu />
-        </div>
+    <MudLayout>
+        <MudAppBar Elevation="1" Style="background-color: #1a1f2e; border-bottom: 1px solid #2d3748;">
+        <MudIcon Icon="@Icons.Material.Filled.Business" Style="color: #4a6fa5; margin-right: 8px; font-size: 28px;" />            <MudText Typo="Typo.h6" Style="color: #e2e8f0; font-weight: 500;">Vállalati Nyilvántartás</MudText>
+            <MudSpacer />
+            @if (loggedIn)
+            {
+                <MudTooltip Text="Személyes adatok">
+                    <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Default" Href="account" Style="color: #a0aec0;" />
+                </MudTooltip>
+                <MudTooltip Text="Kilépés">
+                    <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Default" OnClick="Logout" Style="color: #a0aec0;" />
+                </MudTooltip>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Login"
+                           Style="background-color: #4a6fa5; color: white;"
+                           OnClick="OpenLogin">Belépés</MudButton>
+            }
+        </MudAppBar>
 
-        <main>
-            <div class="top-row px-4">
-                <div style="width:150px;text-align:right;">
-                    @if (loggedIn)
-                    {
-                        <a class="btn btn-sm btn-primary text-white" title="Account" href="account"><span class="oi oi-key"></span></a>
-                        <button class="btn btn-sm btn-danger" title="Kilépés" @onclick="Logout"><span class="oi oi-account-logout"></span></button>
-                    }
-                    else
-                    {
-                        <button class="btn btn-sm btn-success" title="Belépés" @onclick="OpenLogin"><span class="oi oi-account-login"></span></button>
-                    }
-                </div>
-            </div>
+        <MudDrawer Open="true" Variant="DrawerVariant.Persistent" Elevation="2"
+                   Style="background-color: #1a1f2e; border-right: 1px solid #2d3748;">
+            <MudNavMenu Style="padding-top: 8px;">
+                <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home"
+                           Style="color: #a0aec0;">Főoldal</MudNavLink>
+                <MudNavLink Href="account" Icon="@Icons.Material.Filled.Person"
+                           Style="color: #a0aec0;">Személyes adatok</MudNavLink>
+                <MudNavLink Href="accesses" Icon="@Icons.Material.Filled.Badge"
+                           Style="color: #a0aec0;">Jogosultságok</MudNavLink>
+                <MudNavLink Href="devices" Icon="@Icons.Material.Filled.Devices"
+                           Style="color: #a0aec0;">Céges eszközök</MudNavLink>
+                @if (IsLoggedIn() && signInCheck.GetRole() == "Admin")
+                {
+                    <MudDivider Style="margin: 8px 0; border-color: #2d3748;" />
+                    <MudText Typo="Typo.caption" Style="color: #4a5568; padding: 8px 16px; display: block;">Admin</MudText>
+                    <MudNavLink Href="addEmployee" Icon="@Icons.Material.Filled.PersonAdd"
+                               Style="color: #a0aec0;">Beléptetés</MudNavLink>
+                    <MudNavLink Href="removeEmployee" Icon="@Icons.Material.Filled.PersonRemove"
+                               Style="color: #a0aec0;">Kiléptetés</MudNavLink>
+                }
+            </MudNavMenu>
+        </MudDrawer>
 
-            <article class="content px-4">
+        <MudMainContent Style="background-color: #0f1117; min-height: 100vh;">
+            <MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="padding: 24px;">
                 @Body
-            </article>
-        </main>
-    </div>
-
+            </MudContainer>
+        </MudMainContent>
+    </MudLayout>
 </CascadingValue>
 
-<div class="modal-backdrop fade @(show ? "show" : "") @(display ? "d-block" : "d-none")" style="z-index: -1;"></div>
+<MudOverlay Visible="display" DarkBackground="true" ZIndex="1200" />
 
-<div class="modal fade @(show ? "show" : "")  @(display ? "d-block" : "d-none")" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Bejelentkezés</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Bezárás" @onclick="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="loginEmail" class="form-label">E-mail</label>
-                    <input type="email" class="form-control" id="loginEmail" placeholder="nev@vallalat.hu" autocomplete="off" required @bind-value="user" />
-                </div>
-                <div class="mb-3">
-                    <label for="loginPassword" class="form-label">Jelszó</label>
-                    <input type="password" class="form-control" id="loginPassword" required @bind-value="password" />
-                </div>
-                @if (errorMessage == "A felhasználónév és/vagy a jelszó helytelen!")
-                {
-                    <span class="alert alert-danger" role="alert">@errorMessage</span>
-                }
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success" @onclick="Login">Belépés</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Close">Mégse</button>
-            </div>
-        </div>
-    </div>
-</div>
+<MudDialog @bind-IsVisible="display" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Login" Style="margin-right: 8px;" />
+            Bejelentkezés
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="user" Label="E-mail" Placeholder="nev@vallalat.hu"
+                     InputType="InputType.Email" Variant="Variant.Outlined"
+                     Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email"
+                     Style="margin-bottom: 16px;" />
+        <MudTextField @bind-Value="password" Label="Jelszó"
+                     InputType="InputType.Password" Variant="Variant.Outlined"
+                     Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock" />
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Style="margin-top: 16px;">@errorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Variant="Variant.Text" Style="color: #a0aec0;">Mégse</MudButton>
+        <MudButton OnClick="Login" Variant="Variant.Filled"
+                  Style="background-color: #4a6fa5; color: white;">Belépés</MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
 
+    private MudTheme _theme = new MudTheme();
+    private DialogOptions _dialogOptions = new DialogOptions { 
+        CloseOnEscapeKey = true,
+        MaxWidth = MaxWidth.Small,
+        FullWidth = true
+    };
     private bool show, display, loggedIn;
     private string? user, password;
     private string? errorMessage;
@@ -83,6 +113,10 @@
     {
         return loggedIn ? user : null;
     }
+    public bool IsLoggedIn()
+    {
+    return loggedIn;
+    }  
 
     /// <summary>
     /// Opens the log in menu.
@@ -90,11 +124,9 @@
     /// <returns></returns>
     public async Task OpenLogin()
     {
-        user = await LocalStorage.GetStringAsync("user", JSRuntime);
-
-        display = true;
-        await Task.Delay(100);
-        show = true;
+    user = await LocalStorage.GetStringAsync("user", JSRuntime);
+    display = true;
+    StateHasChanged();
     }
 
     /// <summary>
@@ -119,11 +151,10 @@
     /// <returns></returns>
     private async Task Close()
     {
-        show = false;
-        display = false;
-        errorMessage = null;
-        await Task.Delay(500);
-        StateHasChanged();
+    display = false;
+    errorMessage = null;
+    await Task.Delay(200);
+    StateHasChanged();
     }
 
     /// <summary>

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using EquipmentTrackerThesis.Database.Models;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 //original connection strings for windows
@@ -22,6 +23,7 @@ builder.Services.AddSingleton<EquipmentTrackerThesis.ILocalStorage, EquipmentTra
 //Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddMudServices();
 //Database create if doesn't exist
 var initializer = new DatabaseInitializer(masterConnectionString);
 initializer.InitializeDatabase();

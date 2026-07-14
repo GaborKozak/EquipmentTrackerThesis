@@ -4,6 +4,7 @@
 @using EquipmentTrackerThesis.Database;
 @using EquipmentTrackerThesis.Database.Models;
 @using EquipmentTrackerThesis.Pages.Components;
+@using MudBlazor
 @inject DatabaseHandler _databaseHandler;
 @inject DatabaseContext _dbcontext;
 @inject SignInCheck signInCheck
@@ -11,76 +12,61 @@
 
 <PageTitle>Céges eszközök</PageTitle>
 
-<div class="search-container">
-    <input type="text" value="@searchTerm" @oninput="HandleInput" placeholder="Keresés...">
-    <button class="btn btn-primary" @onclick="FilterDevices">Keresés</button>
-    @if (signInCheck.GetRole() == "Admin")
-    {
-        <button class="btn btn-primary" @onclick="AddNewDevice">Új eszköz hozzáadása</button>
-        @if (existSelectedDivice)
+<MudPaper Elevation="0" Style="background-color: transparent; margin-bottom: 16px;">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+        <MudTextField @bind-Value="searchTerm" Placeholder="Keresés..."
+                     Variant="Variant.Outlined" Adornment="Adornment.Start"
+                     AdornmentIcon="@Icons.Material.Filled.Search"
+                     Style="max-width: 300px;" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                  OnClick="FilterDevices">Keresés</MudButton>
+        @if (signInCheck.GetRole() == "Admin")
         {
-            <button class="btn btn-primary" @onclick="ModifyDevice">Eszköz módosítása/archiválása</button>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                      StartIcon="@Icons.Material.Filled.Add"
+                      OnClick="AddNewDevice">Új eszköz hozzáadása</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                      StartIcon="@Icons.Material.Filled.Edit"
+                      Disabled="@(!existSelectedDivice)"
+                      OnClick="ModifyDevice">Eszköz módosítása/archiválása</MudButton>
         }
-        else
-        {
-            <button class="btn btn-primary disabled">Eszköz módosítása/archiválása</button>
-        }
-    }
-</div>
+    </MudStack>
+</MudPaper>
 
 <ModalDialogWindowToAdd @ref="modalDialogWindowToAdd"></ModalDialogWindowToAdd>
 <ModalDialogWindowToModifyRemove @ref="modalDialogWindowToModifyRemove"></ModalDialogWindowToModifyRemove>
 
 @if (devices == null)
 {
-    <p><em>Loading...</em></p>
+    <MudProgressCircular Indeterminate="true" />
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Név</th>
-                <th>Gyártási szám</th>
-                <th>Típus</th>
-                <th>Vásárlás dátuma</th>
-                <th>Tulajdonos</th>
-                <th>Átvétel dátuma</th>
-                <th>Leadás dátuma</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var dev in filteredDevices)
-            {
-                if (dev.Archived == true)
-                {
-                    continue;
-                }
-                else
-                {
-                    <tr @onclick="() => SelectDevice(dev)"
-                    @onmouseover="() => HoverRow(true, dev)"
-                    @onmouseout="() => HoverRow(false)"
-                        class="selectable-row @((selectedDevice != null && selectedDevice.Assignment == dev.Assignment) ? "selected-row" : "") @((hoveredDevice != null && hoveredDevice.Assignment == dev.Assignment) ? "hover-row" : "")">
-                        <td>@dev.Name</td>
-                        <td>@dev.SerialNumber</td>
-                        <td>@dev.Type</td>
-                        <td>@dev.PurchaseDate.Date.ToString("yyyy.MM.dd.")</td>
-                        <td>@employee[dev.Owner].SurName @employee[dev.Owner].FirstName</td>
-                        <td>@dev.ReceptionDate.Date.ToString("yyyy.MM.dd.")</td>
-                        @if (dev.ReceptionDate == dev.ReturnDate)
-                        {
-                            <td>-</td>
-                        }
-                        else
-                        {
-                            <td>@dev.ReturnDate.Date.ToString("yyyy.MM.dd.")</td>
-                        }
-                    </tr>
-                }
-            }
-        </tbody>
-    </table>
+    <MudTable Items="@filteredDevices.Where(d => d.Archived != true)"
+              Hover="true" Striped="false" Dense="false"
+              Style="background-color: #1a1f2e;"
+              RowStyle="color: #e2e8f0; cursor: pointer;"
+              OnRowClick="@((TableRowClickEventArgs<Devices> args) => SelectDevice(args.Item))"
+              RowClassFunc="@((dev, i) => selectedDevice != null && selectedDevice.Assignment == dev.Assignment ? "selected-row" : "")">
+        <HeaderContent>
+            <MudTh Style="color: #a0aec0;">Név</MudTh>
+            <MudTh Style="color: #a0aec0;">Gyártási szám</MudTh>
+            <MudTh Style="color: #a0aec0;">Típus</MudTh>
+            <MudTh Style="color: #a0aec0;">Vásárlás dátuma</MudTh>
+            <MudTh Style="color: #a0aec0;">Tulajdonos</MudTh>
+            <MudTh Style="color: #a0aec0;">Átvétel dátuma</MudTh>
+            <MudTh Style="color: #a0aec0;">Leadás dátuma</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Style="color: #e2e8f0;">@context.Name</MudTd>
+            <MudTd Style="color: #e2e8f0;">@context.SerialNumber</MudTd>
+            <MudTd Style="color: #e2e8f0;">@context.Type</MudTd>
+            <MudTd Style="color: #e2e8f0;">@context.PurchaseDate.Date.ToString("yyyy.MM.dd.")</MudTd>
+            <MudTd Style="color: #e2e8f0;">@employee[context.Owner].SurName @employee[context.Owner].FirstName</MudTd>
+            <MudTd Style="color: #e2e8f0;">@context.ReceptionDate.Date.ToString("yyyy.MM.dd.")</MudTd>
+            <MudTd Style="color: #e2e8f0;">@(context.ReceptionDate == context.ReturnDate ? "-" : context.ReturnDate.Date.ToString("yyyy.MM.dd."))</MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
 @code {
